@@ -128,3 +128,19 @@ def list_reservations(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+class ChatRequest(BaseModel):
+    tenant_id: str
+    message: str
+
+@app.post("/api/chat")
+def chat(
+    request: ChatRequest,
+    db: Session = Depends(get_db)
+):
+    from .agent_simple import agent_reply
+    try:
+        response = agent_reply(db, request.tenant_id, request.message)
+        return {"ok": True, "response": response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
