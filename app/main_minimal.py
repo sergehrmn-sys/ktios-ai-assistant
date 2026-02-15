@@ -21,6 +21,34 @@ def health_check(db: Session = Depends(get_db)):
         return {"status": "healthy", "database": "connected"}
     except Exception as e:
         return {"status": "unhealthy", "error": str(e)}
+@app.post("/api/kb/quick_ingest")
+def kb_quick_ingest(
+    tenant_id: str,
+    title: str,
+    raw_text: str,
+    source: str = "manual",
+    db: Session = Depends(get_db)
+):
+    from .rag import ingest_kb_document
+    try:
+        doc_id = ingest_kb_document(db, tenant_id, title, raw_text, source)
+        return {"ok": True, "document_id": doc_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/kb/search")
+def kb_search(
+    tenant_id: str,
+    query: str,
+    top_k: int = 3,
+    db: Session = Depends(get_db)
+):
+    from .rag import rag_search
+    try:
+        results = rag_search(db, tenant_id, query, top_k)
+        return {"ok": True, "results": results}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/test/reservation")
 def test_create_reservation(
