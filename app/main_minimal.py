@@ -21,31 +21,38 @@ def health_check(db: Session = Depends(get_db)):
         return {"status": "healthy", "database": "connected"}
     except Exception as e:
         return {"status": "unhealthy", "error": str(e)}
+
+class KBIngestRequest(BaseModel):
+    tenant_id: str
+    title: str
+    raw_text: str
+    source: str = "manual"
+
 @app.post("/api/kb/quick_ingest")
 def kb_quick_ingest(
-    tenant_id: str,
-    title: str,
-    raw_text: str,
-    source: str = "manual",
+    request: KBIngestRequest,
     db: Session = Depends(get_db)
 ):
     from .rag import ingest_kb_document
     try:
-        doc_id = ingest_kb_document(db, tenant_id, title, raw_text, source)
+        doc_id = ingest_kb_document(db, request.tenant_id, request.title, request.raw_text, request.source)
         return {"ok": True, "document_id": doc_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+class KBSearchRequest(BaseModel):
+    tenant_id: str
+    query: str
+    top_k: int = 3
+
 @app.post("/api/kb/search")
 def kb_search(
-    tenant_id: str,
-    query: str,
-    top_k: int = 3,
+    request: KBSearchRequest,
     db: Session = Depends(get_db)
 ):
     from .rag import rag_search
     try:
-        results = rag_search(db, tenant_id, query, top_k)
+        results = rag_search(db, request.tenant_id, request.query, request.top_k)
         return {"ok": True, "results": results}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
