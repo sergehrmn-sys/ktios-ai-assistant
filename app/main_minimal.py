@@ -21,7 +21,7 @@ def health_check(db: Session = Depends(get_db)):
         db.execute(select(1))
         return {"status": "healthy", "database": "connected"}
     except Exception as e:
-        return {"status": "unhealthy", "error": str(e)}
+        return {"status": "unhealthy", "error": repr(e)}
 
 class KBIngestRequest(BaseModel):
     tenant_id: str
