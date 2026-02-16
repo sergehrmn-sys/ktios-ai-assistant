@@ -3,14 +3,7 @@ from sqlalchemy.orm import Session
 from .rag import rag_search
 
 def agent_reply(db: Session, tenant_id: str, user_message: str) -> str:
-    print(f"DEBUG: Recherche pour: '{user_message}'")
-    
     kb_results = rag_search(db, tenant_id, user_message, top_k=3)
-    
-    print(f"DEBUG: Nombre de résultats: {len(kb_results) if kb_results else 0}")
-    if kb_results:
-        for i, r in enumerate(kb_results):
-            print(f"DEBUG: Résultat {i+1} score={r.get('score', 0)}: {r.get('chunk_text', '')[:100]}...")
     
     if kb_results and len(kb_results) > 0:
         response = "Voici les informations trouvées:\n\n"
