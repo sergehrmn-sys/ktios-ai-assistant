@@ -80,9 +80,12 @@ def ingest_kb_document(db: Session, tenant_id: str, title: str, raw_text: str, s
 def rag_search(db: Session, tenant_id: str, query: str, top_k: int = 3):
     """Recherche dans la base de connaissance avec recherche texte PostgreSQL"""
     
+    print(f"DEBUG RAG_SEARCH: tenant_id={tenant_id}, type={type(tenant_id)}")
+    print(f"DEBUG RAG_SEARCH: query={query}")
+    
     rows = db.execute(
         text("""
-        SELECT 
+        SELECT
             chunk_text,
             ts_rank(to_tsvector('french', chunk_text), plainto_tsquery('french', :query)) as rank
         FROM kb_chunks
@@ -92,11 +95,13 @@ def rag_search(db: Session, tenant_id: str, query: str, top_k: int = 3):
         LIMIT :top_k
         """),
         {
-            "tenant_id": uuid.UUID(tenant_id),
+            "tenant_id": uuid.UUID(tenant_id) if isinstance(tenant_id, str) else tenant_id,
             "query": query,
             "top_k": top_k
         }
     ).mappings().all()
+    
+    print(f"DEBUG RAG_SEARCH: Found {len(rows)} results")
     
     results = []
     for row in rows:
@@ -104,5 +109,8 @@ def rag_search(db: Session, tenant_id: str, query: str, top_k: int = 3):
             "chunk_text": row["chunk_text"],
             "score": float(row["rank"])
         })
+    
+    print(f"DEBUG RAG_SEARCH: Returning {len(results)} results")
+    print(f"DEBUG RAG_SEARCH: First result = {results[0] if results else 'NONE'}")
     
     return results

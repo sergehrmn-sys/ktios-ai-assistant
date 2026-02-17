@@ -1,0 +1,14 @@
+               Liste des relations
+ Schéma  |       Nom        | Type  | Propriétaire 
+--------+------------------+-------+-------------
+ public | channels         | table | postgres
+ public | conversations    | table | postgres
+ public | customers        | table | postgres
+ public | handoff_requests | table | postgres
+ public | kb_chunks        | table | postgres
+ public | kb_documents     | table | postgres
+ public | messages         | table | postgres
+ public | reservations     | table | postgres
+ public | tenants          | table | postgres
+(9 lignes)
+

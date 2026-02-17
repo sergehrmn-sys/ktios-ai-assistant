@@ -1,14 +1,21 @@
-import os
-from sqlalchemy.orm import Session
-from .rag import rag_search
+﻿import json
+import requests
 
-def agent_reply(db: Session, tenant_id: str, user_message: str) -> str:
-    kb_results = rag_search(db, tenant_id, user_message, top_k=3)
-    
-    if kb_results and len(kb_results) > 0:
-        response = "Voici les informations trouvées:\n\n"
-        for idx, result in enumerate(kb_results, 1):
-            response += f"{result['chunk_text']}\n\n"
-        return response.strip()
-    else:
-        return "Désolé, je n'ai pas trouvé d'information sur ce sujet. Contactez-nous au 367-382-0451 pour plus de détails."
+API_URL = "http://localhost:8000/api/kb/quick_ingest"
+TENANT_ID = "11111111-1111-1111-1111-111111111111"
+
+with open("ktios_complete_real.json", "r", encoding="utf-8") as f:
+    documents = json.load(f)
+
+for doc in documents:
+    doc["tenant_id"] = TENANT_ID
+    try:
+        response = requests.post(API_URL, json=doc)
+        if response.status_code == 200:
+            print(f"OK: {doc['title']}")
+        else:
+            print(f"ERREUR: {response.text}")
+    except Exception as e:
+        print(f"EXCEPTION: {str(e)}")
+
+print(f"\nTermine ! {len(documents)} documents.")

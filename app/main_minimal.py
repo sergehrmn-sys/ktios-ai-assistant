@@ -74,15 +74,21 @@ def list_reservations(tenant_id: str, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
 class ChatRequest(BaseModel):
     tenant_id: str
     message: str
+    history: list[ChatMessage] = []
 
 @app.post("/api/chat")
 def chat(request: ChatRequest, db: Session = Depends(get_db)):
     from .agent_simple import agent_reply
     try:
-        response = agent_reply(db, request.tenant_id, request.message)
+        history = [{"role": m.role, "content": m.content} for m in request.history]
+        response = agent_reply(db, request.tenant_id, request.message, history)
         return {"ok": True, "response": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

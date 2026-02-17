@@ -1,183 +1,36 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KTIOS Lounge - Assistant IA</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 800px;
-            width: 100%;
-            height: 90vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #c9302c 0%, #a82824 100%);
-            color: white;
-            padding: 25px;
-            text-align: center;
-            border-radius: 20px 20px 0 0;
-        }
-        
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 5px;
-        }
-        
-        .header p {
-            opacity: 0.9;
-            font-size: 14px;
-        }
-        
-        .chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            background: #f8f9fa;
-        }
-        
-        .message {
-            margin-bottom: 15px;
-            display: flex;
-            align-items: flex-start;
-            animation: fadeIn 0.3s;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .message.user {
-            justify-content: flex-end;
-        }
-        
-        .message-content {
-            max-width: 70%;
-            padding: 12px 18px;
-            border-radius: 18px;
-            line-height: 1.5;
-            white-space: pre-wrap;
-        }
-        
-        .message.bot .message-content {
-            background: white;
-            color: #333;
-            border: 1px solid #e0e0e0;
-            border-radius: 18px 18px 18px 4px;
-        }
-        
-        .message.user .message-content {
-            background: #c9302c;
-            color: white;
-            border-radius: 18px 18px 4px 18px;
-        }
-        
-        .input-container {
-            padding: 20px;
-            background: white;
-            border-top: 1px solid #e0e0e0;
-            display: flex;
-            gap: 10px;
-        }
-        
-        #userInput {
-            flex: 1;
-            padding: 12px 18px;
-            border: 2px solid #e0e0e0;
-            border-radius: 25px;
-            font-size: 15px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        
-        #userInput:focus {
-            border-color: #c9302c;
-        }
-        
-        #sendButton {
-            background: #c9302c;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        
-        #sendButton:hover {
-            background: #a82824;
-        }
-        
-        #sendButton:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        
-        .loading {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #c9302c;
-            margin: 0 2px;
-            animation: bounce 1.4s infinite ease-in-out both;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 800px; width: 100%; height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
+        .header { background: linear-gradient(135deg, #c9302c 0%, #a82824 100%); color: white; padding: 25px; text-align: center; border-radius: 20px 20px 0 0; }
+        .header h1 { font-size: 28px; margin-bottom: 5px; }
+        .header p { opacity: 0.9; font-size: 14px; }
+        .chat-container { flex: 1; overflow-y: auto; padding: 20px; background: #f8f9fa; }
+        .message { margin-bottom: 15px; display: flex; align-items: flex-start; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .message.user { justify-content: flex-end; }
+        .message-content { max-width: 70%; padding: 12px 18px; border-radius: 18px; line-height: 1.5; white-space: pre-wrap; }
+        .message.bot .message-content { background: white; color: #333; border: 1px solid #e0e0e0; border-radius: 18px 18px 18px 4px; }
+        .message.user .message-content { background: #c9302c; color: white; border-radius: 18px 18px 4px 18px; }
+        .input-container { padding: 20px; background: white; border-top: 1px solid #e0e0e0; display: flex; gap: 10px; }
+        #userInput { flex: 1; padding: 12px 18px; border: 2px solid #e0e0e0; border-radius: 25px; font-size: 15px; outline: none; transition: border-color 0.3s; }
+        #userInput:focus { border-color: #c9302c; }
+        #sendButton { background: #c9302c; color: white; border: none; padding: 12px 30px; border-radius: 25px; font-size: 15px; font-weight: bold; cursor: pointer; }
+        #sendButton:hover { background: #a82824; }
+        #sendButton:disabled { background: #ccc; cursor: not-allowed; }
+        .loading { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #c9302c; margin: 0 2px; animation: bounce 1.4s infinite ease-in-out both; }
         .loading:nth-child(1) { animation-delay: -0.32s; }
         .loading:nth-child(2) { animation-delay: -0.16s; }
-        
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
-        }
-        
-        .suggestions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-        
-        .suggestion-btn {
-            background: white;
-            border: 2px solid #c9302c;
-            color: #c9302c;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.3s;
-        }
-        
-        .suggestion-btn:hover {
-            background: #c9302c;
-            color: white;
-        }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        .suggestions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        .suggestion-btn { background: white; border: 2px solid #c9302c; color: #c9302c; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 13px; }
+        .suggestion-btn:hover { background: #c9302c; color: white; }
     </style>
 </head>
 <body>
@@ -186,116 +39,93 @@
             <h1>🍸 KTIOS LOUNGE</h1>
             <p>Assistant virtuel - Posez vos questions !</p>
         </div>
-        
         <div class="chat-container" id="chatContainer">
             <div class="message bot">
                 <div class="message-content">
                     👋 Bonjour ! Je suis l'assistant virtuel du KTIOS Lounge. Comment puis-je vous aider aujourd'hui ?
                     <div class="suggestions">
                         <button class="suggestion-btn" onclick="sendSuggestion('Adresse')">📍 Adresse</button>
-                        <button class="suggestion-btn" onclick="sendSuggestion('Téléphone')">📞 Téléphone</button>
+                        <button class="suggestion-btn" onclick="sendSuggestion('Telephone')">📞 Téléphone</button>
                         <button class="suggestion-btn" onclick="sendSuggestion('Menu')">📋 Menu</button>
-                        <button class="suggestion-btn" onclick="sendSuggestion('Prix Blue Label')">🥃 Prix whisky</button>
+                        <button class="suggestion-btn" onclick="sendSuggestion('Blue Label')">🥃 Prix whisky</button>
                     </div>
                 </div>
             </div>
         </div>
-        
         <div class="input-container">
             <input type="text" id="userInput" placeholder="Posez votre question..." onkeypress="handleKeyPress(event)">
             <button id="sendButton" onclick="sendMessage()">Envoyer</button>
         </div>
     </div>
-
     <script>
         const TENANT_ID = "11111111-1111-1111-1111-111111111111";
         const API_URL = "http://localhost:8000/api/chat";
-        
+        let conversationHistory = [];
         function addMessage(content, isUser) {
-            const chatContainer = document.getElementById('chatContainer');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
-            
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'message-content';
+            const chatContainer = document.getElementById("chatContainer");
+            const messageDiv = document.createElement("div");
+            messageDiv.className = "message " + (isUser ? "user" : "bot");
+            const contentDiv = document.createElement("div");
+            contentDiv.className = "message-content";
             contentDiv.textContent = content;
-            
             messageDiv.appendChild(contentDiv);
             chatContainer.appendChild(messageDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
-        
         function addLoadingMessage() {
-            const chatContainer = document.getElementById('chatContainer');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message bot';
-            messageDiv.id = 'loading-message';
-            
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'message-content';
-            contentDiv.innerHTML = '<span class="loading"></span><span class="loading"></span><span class="loading"></span>';
-            
+            const chatContainer = document.getElementById("chatContainer");
+            const messageDiv = document.createElement("div");
+            messageDiv.className = "message bot";
+            messageDiv.id = "loading-message";
+            const contentDiv = document.createElement("div");
+            contentDiv.className = "message-content";
+            contentDiv.innerHTML = "<span class='loading'></span><span class='loading'></span><span class='loading'></span>";
             messageDiv.appendChild(contentDiv);
             chatContainer.appendChild(messageDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
-        
         function removeLoadingMessage() {
-            const loadingMsg = document.getElementById('loading-message');
+            const loadingMsg = document.getElementById("loading-message");
             if (loadingMsg) loadingMsg.remove();
         }
-        
         async function sendMessage() {
-            const input = document.getElementById('userInput');
-            const sendButton = document.getElementById('sendButton');
+            const input = document.getElementById("userInput");
+            const sendButton = document.getElementById("sendButton");
             const message = input.value.trim();
-            
             if (!message) return;
-            
             addMessage(message, true);
-            input.value = '';
+            input.value = "";
             sendButton.disabled = true;
             addLoadingMessage();
-            
             try {
                 const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        tenant_id: TENANT_ID,
-                        message: message
-                    })
+                    method: "POST",
+                    headers: { "Content-Type": "application/json; charset=utf-8" },
+                    body: JSON.stringify({ tenant_id: TENANT_ID, message: message, history: conversationHistory })
                 });
-                
                 const data = await response.json();
                 removeLoadingMessage();
-                
                 if (data.ok) {
+                    conversationHistory.push({"role": "user", "content": message});
+                    conversationHistory.push({"role": "assistant", "content": data.response});
+                    if (conversationHistory.length > 10) conversationHistory = conversationHistory.slice(-10);
                     addMessage(data.response, false);
                 } else {
-                    addMessage("Désolé, une erreur s'est produite. Veuillez réessayer.", false);
+                    addMessage("Desole, une erreur s'est produite.", false);
                 }
             } catch (error) {
                 removeLoadingMessage();
-                addMessage("Erreur de connexion au serveur. Assurez-vous que l'API est en cours d'exécution.", false);
-                console.error('Error:', error);
+                addMessage("Erreur de connexion au serveur.", false);
             }
-            
             sendButton.disabled = false;
             input.focus();
         }
-        
         function sendSuggestion(text) {
-            document.getElementById('userInput').value = text;
+            document.getElementById("userInput").value = text;
             sendMessage();
         }
-        
         function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
+            if (event.key === "Enter") sendMessage();
         }
     </script>
 </body>

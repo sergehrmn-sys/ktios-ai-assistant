@@ -5,30 +5,41 @@ from .rag import rag_search
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-SYSTEM_PROMPT = "Tu es assistant virtuel du KTIOS Lounge. Reponds de maniere concise."
+SYSTEM_PROMPT = """Tu es l'assistant virtuel du KTIOS Lounge, un bar haut de gamme a Quebec.
+Reponds toujours en francais, de maniere concise (2-3 phrases max).
+Utilise les informations du contexte fourni pour repondre precisement.
+Si tu ne trouves pas l'information, suggere de contacter le 367-382-0451."""
 
-def agent_reply(db: Session, tenant_id: str, user_message: str) -> str:
+def agent_reply(db: Session, tenant_id: str, user_message: str, conversation_history: list = None) -> str:
+    if conversation_history is None:
+        conversation_history = []
+
     kb_results = rag_search(db, tenant_id, user_message, top_k=3)
-    
+
     if kb_results and len(kb_results) > 0:
         context = "\n\n".join([r['chunk_text'] for r in kb_results])
-        user_prompt = f"Contexte:\n{context}\n\nQuestion: {user_message}"
+        system_with_context = f"{SYSTEM_PROMPT}\n\nContexte KTIOS:\n{context}"
     else:
-        user_prompt = f"Question: {user_message}\n\nAucune info. Suggere de contacter le 367-382-0451."
-    
+        system_with_context = SYSTEM_PROMPT
+
+    messages = [{"role": "system", "content": system_with_context}]
+
+    for msg in conversation_history[-6:]:
+        messages.append(msg)
+
+    messages.append({"role": "user", "content": user_message})
+
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_prompt}
-            ],
+            messages=messages,
             temperature=0.7,
-            max_tokens=150
+            max_tokens=200
         )
         return response.choices[0].message.content
+
     except Exception as e:
-        print(f"ERROR: {e}")
+        print(f"ERROR OpenAI: {e}")
         if kb_results:
-            return f"Voici les informations:\n\n{kb_results[0]['chunk_text'][:300]}..."
+            return kb_results[0]['chunk_text'][:300]
         return "Erreur technique. Contactez-nous au 367-382-0451."
