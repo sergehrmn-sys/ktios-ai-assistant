@@ -82,7 +82,7 @@ def rag_search(db: Session, tenant_id: str, query: str, top_k: int = 3):
     
     print(f"DEBUG RAG_SEARCH: tenant_id={tenant_id}, type={type(tenant_id)}")
     print(f"DEBUG RAG_SEARCH: query={query}")
-    
+    print(f"DEBUG RAG_SEARCH: SQL tenant_id converted = {uuid.UUID(tenant_id) if isinstance(tenant_id, str) else tenant_id}")
     rows = db.execute(
         text("""
         SELECT
