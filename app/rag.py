@@ -78,19 +78,20 @@ def ingest_kb_document(db: Session, tenant_id: str, title: str, raw_text: str, s
         raise
 
 def rag_search(db: Session, tenant_id: str, query: str, top_k: int = 3):
-    """Recherche dans la base de connaissance avec recherche texte PostgreSQL"""
+    """Recherche dans la base de connaissance avec ILIKE simple"""
     
     print(f"DEBUG RAG_SEARCH: tenant_id={tenant_id}, type={type(tenant_id)}")
     print(f"DEBUG RAG_SEARCH: query={query}")
     print(f"DEBUG RAG_SEARCH: SQL tenant_id converted = {uuid.UUID(tenant_id) if isinstance(tenant_id, str) else tenant_id}")
+    
     rows = db.execute(
         text("""
         SELECT
             chunk_text,
-            ts_rank(to_tsvector('french', chunk_text), plainto_tsquery('french', :query)) as rank
+            1.0 as rank
         FROM kb_chunks
         WHERE tenant_id = :tenant_id
-          AND to_tsvector('french', chunk_text) @@ plainto_tsquery('french', :query)
+          AND chunk_text ILIKE '%' || :query || '%'
         ORDER BY rank DESC
         LIMIT :top_k
         """),
