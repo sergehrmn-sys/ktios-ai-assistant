@@ -78,40 +78,11 @@ def ingest_kb_document(db: Session, tenant_id: str, title: str, raw_text: str, s
         raise
 
 def rag_search(db: Session, tenant_id: str, query: str, top_k: int = 3):
-    """Recherche dans la base de connaissance avec ILIKE simple"""
+    """Recherche dans la base de connaissance avec extraction de mots-clés"""
     
     print(f"DEBUG RAG_SEARCH: tenant_id={tenant_id}, type={type(tenant_id)}")
     print(f"DEBUG RAG_SEARCH: query={query}")
-    print(f"DEBUG RAG_SEARCH: SQL tenant_id converted = {uuid.UUID(tenant_id) if isinstance(tenant_id, str) else tenant_id}")
     
-    rows = db.execute(
-        text("""
-        SELECT
-            chunk_text,
-            1.0 as rank
-        FROM kb_chunks
-        WHERE tenant_id = :tenant_id
-          AND chunk_text ILIKE '%' || :query || '%'
-        ORDER BY rank DESC
-        LIMIT :top_k
-        """),
-        {
-            "tenant_id": uuid.UUID(tenant_id) if isinstance(tenant_id, str) else tenant_id,
-            "query": query,
-            "top_k": top_k
-        }
-    ).mappings().all()
-    
-    print(f"DEBUG RAG_SEARCH: Found {len(rows)} results")
-    
-    results = []
-    for row in rows:
-        results.append({
-            "chunk_text": row["chunk_text"],
-            "score": float(row["rank"])
-        })
-    
-    print(f"DEBUG RAG_SEARCH: Returning {len(results)} results")
-    print(f"DEBUG RAG_SEARCH: First result = {results[0] if results else 'NONE'}")
-    
-    return results
+    # Extrait les mots importants (retire les mots vides français)
+    stop_words = {'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'd', 'et', 'ou', 'à', 'au', 
+                  'est', 'sont', 'que
