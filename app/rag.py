@@ -85,5 +85,42 @@ def rag_search(db: Session, tenant_id: str, query: str, top_k: int = 3):
     
     # Extrait les mots importants (retire les mots vides français)
     stop_words = {'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'd', 'et', 'ou', 'à', 'au', 
-              'est', 'sont', 'quel', 'quelle', 'quels', 'quelles', 'comment', 'combien',
-              'avez', 'vous', 'je', 'il', 'elle', 'nous', 'ils', 'elles', 'sur', 'dans', 'prix'}
+                  'est', 'sont', 'quel', 'quelle', 'quels', 'quelles', 'comment', 'combien',
+                  'avez', 'vous', 'je', 'il', 'elle', 'nous', 'ils', 'elles', 'sur', 'dans', 'prix'}
+    
+    words = [w.lower().strip('?.,!') for w in query.split() if len(w) > 2 and w.lower() not in stop_words]
+    keywords = ' '.join(words) if words else query
+    
+    print(f"DEBUG RAG_SEARCH: keywords extracted = '{keywords}'")
+    
+    rows = db.execute(
+        text("""
+        SELECT
+            chunk_text,
+            1.0 as rank
+        FROM kb_chunks
+        WHERE tenant_id = :tenant_id
+          AND chunk_text ILIKE '%' || :query || '%'
+        ORDER BY rank DESC
+        LIMIT :top_k
+        """),
+        {
+            "tenant_id": uuid.UUID(tenant_id) if isinstance(tenant_id, str) else tenant_id,
+            "query": keywords,
+            "top_k": top_k
+        }
+    ).mappings().all()
+    
+    print(f"DEBUG RAG_SEARCH: Found {len(rows)} results")
+    
+    results = []
+    for row in rows:
+        results.append({
+            "chunk_text": row["chunk_text"],
+            "score": float(row["rank"])
+        })
+    
+    print(f"DEBUG RAG_SEARCH: Returning {len(results)} results")
+    print(f"DEBUG RAG_SEARCH: First result = {results[0] if results else 'NONE'}")
+    
+    return results
