@@ -1,4 +1,7 @@
 import os
+import os
+# WhatsApp integration - force redeploy
+import uuid as uuid_lib
 import uuid as uuid_lib
 from fastapi import FastAPI, Request, Depends, Response, HTTPException
 from sqlalchemy.orm import Session
