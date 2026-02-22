@@ -85,8 +85,8 @@ def rag_search(db: Session, tenant_id: str, query: str, top_k: int = 3):
     
     # Extrait les mots importants (retire les mots vides français)
     stop_words = {'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'd', 'et', 'ou', 'à', 'au', 
-                  'est', 'sont', 'quel', 'quelle', 'quels', 'quelles', 'comment', 'combien',
-                  'avez', 'vous', 'je', 'il', 'elle', 'nous', 'ils', 'elles', 'sur', 'dans', 'prix'}
+              'est', 'sont', 'quel', 'quelle', 'quels', 'quelles', 'comment', 'combien',
+              'avez', 'vous', 'votre', 'vos', 'notre', 'nos', 'je', 'il', 'elle', 'nous', 'ils', 'elles', 'sur', 'dans', 'prix'}
     
     words = [w.lower().strip('?.,!') for w in query.split() if len(w) > 2 and w.lower() not in stop_words]
     keywords = ' '.join(words) if words else query
