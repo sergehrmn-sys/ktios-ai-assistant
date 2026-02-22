@@ -1,16 +1,16 @@
 import os
-import os
 # WhatsApp integration - force redeploy
 import uuid as uuid_lib
-import uuid as uuid_lib
 from fastapi import FastAPI, Request, Depends, Response, HTTPException
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import select, and_, desc, text
 from pydantic import BaseModel
-from fastapi.responses import FileResponse
+from twilio.twiml.messaging_response import MessagingResponse
 
 from .db import get_db
 from .models import Channel, Customer, Conversation, Message
+from .whatsapp import process_whatsapp_message
 
 app = FastAPI(title="AI Front Desk MVP")
 
@@ -96,6 +96,32 @@ def chat(request: ChatRequest, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/chat")
-def chat_interface():
-    return FileResponse("app/static_chat.html")
+@app.post("/api/whatsapp")
+async def whatsapp_webhook(request: Request, db: Session = Depends(get_db)):
+    """Webhook pour messages WhatsApp de Twilio"""
+    
+    # Parse le formulaire Twilio
+    form_data = await request.form()
+    
+    from_number = form_data.get("From", "").replace("whatsapp:", "")
+    message_body = form_data.get("Body", "")
+    
+    print(f"📱 WhatsApp from {from_number}: {message_body}")
+    
+    # Traite le message avec l'agent IA
+    try:
+        response_text = process_whatsapp_message(from_number, message_body, db)
+        
+        # Crée réponse TwiML
+        resp = MessagingResponse()
+        resp.message(response_text)
+        
+        return Response(content=str(resp), media_type="application/xml")
+        
+    except Exception as e:
+        print(f"ERROR in whatsapp webhook: {e}")
+        
+        resp = MessagingResponse()
+        resp.message("Désolé, une erreur s'est produite. Contactez-nous au 367-382-0451.")
+        
+        return Response(content=str(resp), media_type="application/xml")
